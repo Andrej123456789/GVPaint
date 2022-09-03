@@ -1,0 +1,13 @@
+[package]
+name = "gvpaint"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clearscreen = "1.0.10"
+rand = "0.8.5"
+termcolor = "1.1.3"
+termion = "*"
+termsize = "0.1"
