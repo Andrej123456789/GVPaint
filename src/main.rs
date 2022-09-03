@@ -1,29 +1,31 @@
 #![allow(unused)]
 
-use std::{io::Write, process::Termination};
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-
-extern crate termsize;
+use std::{io::{Write, stdout}, thread, time::Duration};
+use crossterm::{terminal, style, QueueableCommand};
 
 fn main() {
     clearscreen::clear().expect("Failed to clean screen!");
+    let mut stdout = stdout();
 
-    let mut colorspec = ColorSpec::new();
-    let mut stdout = StandardStream::stdout(ColorChoice::Always);
-    let (x, y) = termion::terminal_size().unwrap();
+    let size = terminal::size().unwrap();
+    let x = size.0;
+    let y = size.1;
 
-    let mut i= 0;
+    let mut i = 0;
     let mut j = 0;
+
+    stdout.queue(style::SetBackgroundColor(style::Color::White));
 
     while i < y {
         while j < x {
-            stdout.set_color(&colorspec.set_bg(Some(Color::Rgb((255), (255), (255)))));
-            writeln!(stdout, "{} ",
-            termion::cursor::Goto(j, i));
+            println!(" ");
             i+=1;
             j+=1;
         }
-    }   
+    }
 
-    stdout.set_color(&colorspec.set_bg(Some(Color::Black)));
+    thread::sleep(Duration::from_secs(2));
+
+    stdout.queue(style::SetBackgroundColor(style::Color::Reset));
+    clearscreen::clear().expect("Failed to clean screen!");
 }
