@@ -1,7 +1,9 @@
 #![allow(unused)]
 
-use std::{io::{Write, stdout}, thread, time::Duration};
+use std::{io::{Write, stdout}};
 use crossterm::{terminal, style, QueueableCommand};
+
+mod menu;
 
 fn main() {
     clearscreen::clear().expect("Failed to clean screen!");
@@ -24,8 +26,9 @@ fn main() {
         }
     }
 
-    thread::sleep(Duration::from_secs(2));
+    menu::menu();
 
     stdout.queue(style::SetBackgroundColor(style::Color::Reset));
+    stdout.queue(style::SetForegroundColor(style::Color::Reset));
     clearscreen::clear().expect("Failed to clean screen!");
 }
