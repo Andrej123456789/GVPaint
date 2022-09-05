@@ -10,6 +10,8 @@ enum KEY {
     S,
     A,
     D,
+    FILE,
+    HELP,
     PLACE,
     ERASE,
     QUIT
@@ -74,6 +76,8 @@ fn cursor_input() -> u32 {
         115 | 83 => return KEY::S as u32,
         97  | 65 => return KEY::A as u32,
         100 | 68 => return KEY::D as u32,
+        102 | 70 => return KEY::FILE as u32,
+        104 | 72 => return KEY::HELP as u32,
         112 | 80 => return KEY::PLACE as u32,
         101 | 69 => return KEY::ERASE as u32,
         113 | 81 => return KEY::QUIT as u32,
@@ -91,10 +95,21 @@ fn remove_old_cursor(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64) {
     println!("\u{2588}");
 }
 
-fn place_new_cursor(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64) {
-    stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
-    stdout.queue(style::SetForegroundColor(style::Color::Black));
-    println!("\u{2588}");
+fn place_new_cursor(stdout: &mut Stdout, mut cursor_x: f64, mut cursor_y: f64, height: u16) -> f64 {
+    if (cursor_y as u16) != (height - 2) {
+        stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+        stdout.queue(style::SetForegroundColor(style::Color::Black));
+        println!("\u{2588}");
+    }
+
+    else {
+        remove_old_cursor(stdout, cursor_x, cursor_y);
+
+        cursor_y -= 2.0;
+        cursor_y = place_new_cursor(stdout, cursor_x, cursor_y, height);
+    }
+
+    return cursor_y;
 }
 
 fn place_blok(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, color: u32) {
@@ -121,7 +136,7 @@ fn place_blok(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, color: u32) {
     println!("\u{2588}");
 }
 
-fn logic(width: u16, height:u16) {
+fn logic(width: u16, height: u16) {
     let mut stdout: Stdout = stdout();
 
     let mut cursor_x: f64 = (width as f64) / (2.2 as f64);
@@ -129,7 +144,7 @@ fn logic(width: u16, height:u16) {
 
     stdout.queue(style::SetForegroundColor(style::Color::Red));
     stdout.queue(cursor::MoveTo(0, 0));
-    println!("File\tExit");
+    println!("File\tHelp");
 
     stdout.queue(cursor::EnableBlinking);
     stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
@@ -142,40 +157,48 @@ fn logic(width: u16, height:u16) {
         if key == 1 {
             remove_old_cursor(&mut stdout, cursor_x, cursor_y);
             cursor_y -= 1.0;
-            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+            cursor_y = place_new_cursor(&mut stdout, cursor_x, cursor_y, height);
         }
     
         else if key == 2 {
             remove_old_cursor(&mut stdout, cursor_x, cursor_y);
             cursor_y += 1.0;
-            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+            cursor_y = place_new_cursor(&mut stdout, cursor_x, cursor_y, height);
         }
     
         else if key == 3 {
             remove_old_cursor(&mut stdout, cursor_x, cursor_y);
             cursor_x -= 1.0;
-            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+            cursor_y =  place_new_cursor(&mut stdout, cursor_x, cursor_y, height);
         }
     
         else if key == 4 {
             remove_old_cursor(&mut stdout, cursor_x, cursor_y);
             cursor_x += 1.0;
-            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+            cursor_y =  place_new_cursor(&mut stdout, cursor_x, cursor_y, height);
         }
 
-        else if key == 5 { /* PLACE */
+        else if key == 5 { /* FILE */
+            /* will be there soon, hopefully */
+        }
+
+        else if key == 6 { /* HELP */
+            /* will be there soon, hopefully */
+        }
+
+        else if key == 7 { /* PLACE */
             place_blok(&mut stdout, cursor_x, cursor_y, 2); /* all colors will be implemented soon, hopefully */
             cursor_x -= 1.0;
-            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+            cursor_y =  place_new_cursor(&mut stdout, cursor_x, cursor_y, height);
         }
 
-        else if key == 6 { /* ERASE */
+        else if key == 8 { /* ERASE */
             place_blok(&mut stdout, cursor_x, cursor_y, 11);
             cursor_x -= 1.0;
-            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+            cursor_y = place_new_cursor(&mut stdout, cursor_x, cursor_y, height);
         }
 
-        else if key == 7 { /* QUIT */
+        else if key == 9 { /* QUIT */
             break;
         }
     
