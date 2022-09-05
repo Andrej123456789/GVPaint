@@ -6,6 +6,7 @@ Paint ported to Windows, macOS, GNU/Linux, BSD and others from [PekOS-GV](https:
 - Memory safety
 - Speed
 - Has 20 colors
+- TUI app (runs fully in terminal/terminal emulator)
 - Under MIT license
 
 ## Compile & Run

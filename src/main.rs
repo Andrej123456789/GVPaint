@@ -26,7 +26,7 @@ fn main() {
         }
     }
 
-    menu::menu();
+    menu::menu(x, y);
 
     stdout.queue(style::SetBackgroundColor(style::Color::Reset));
     stdout.queue(style::SetForegroundColor(style::Color::Reset));

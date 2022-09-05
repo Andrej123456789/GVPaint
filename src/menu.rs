@@ -31,7 +31,6 @@ fn read_user_input_character() -> char {
 }
 
 fn cursor_input() ->  u32 {
-    println!("Enter a char: ");
     let ch = read_user_input_character();
 
     unsafe {
@@ -59,20 +58,71 @@ fn cursor_input() ->  u32 {
     return KEY::ERROR as u32;
 }
 
-fn logic() {
+fn logic(width: u16, height:u16) {
     let mut stdout: Stdout = stdout();
+
+    let mut cursor_x: f64 = (width as f64) / (2.2 as f64);
+    let mut cursor_y: f64 = (height as f64) / (2.2 as f64);
 
     stdout.queue(style::SetForegroundColor(style::Color::Red));
     stdout.queue(cursor::MoveTo(0, 0));
-    println!("File");
+    println!("File\tExit");
+
+    stdout.queue(cursor::EnableBlinking);
+    stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+    stdout.queue(style::SetForegroundColor(style::Color::Black));
+    println!("\u{2588}");
 
     loop {
         let key: u32 = cursor_input();
-        println!("Key pressed: {}", key);
+        
+        if key == 1 {
+            stdout.queue(style::SetForegroundColor(style::Color::White));
+            println!("\u{2588}");
+
+            cursor_y += 1.0;
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+            stdout.queue(style::SetForegroundColor(style::Color::Black));
+            println!("\u{2588}");
+        }
+    
+        else if key == 2 {
+            stdout.queue(style::SetForegroundColor(style::Color::White));
+            println!("\u{2588}");
+
+            cursor_y -= 1.0;
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+            stdout.queue(style::SetForegroundColor(style::Color::Black));
+            println!("\u{2588}");
+        }
+    
+        else if key == 3 {
+            stdout.queue(style::SetForegroundColor(style::Color::White));
+            println!("\u{2588}");
+
+            cursor_x -= 1.0;
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+            stdout.queue(style::SetForegroundColor(style::Color::Black));
+            println!("\u{2588}");
+        }
+    
+        else if key == 4 {
+            stdout.queue(style::SetForegroundColor(style::Color::White));
+            println!("\u{2588}");
+            
+            cursor_x += 1.0;
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16)); 
+            stdout.queue(style::SetForegroundColor(style::Color::Black));
+            println!("\u{2588}");
+        }
+    
+        else {
+            /* ignore */
+        }
     }
 }
 
-pub fn menu()
+pub fn menu(width: u16, height:u16)
 {
-    logic();
+    logic(width, height);
 }
