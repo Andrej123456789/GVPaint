@@ -1,5 +1,6 @@
-use std::{{io::{Write, stdout}}, thread, time::Duration, io::Stdout};
+use std::{{io, io::{Read, Write, Stdout, stdout}}, thread, time::Duration};
 use crossterm::{terminal, style, cursor, QueueableCommand};
+use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
 
 static mut ALREADY: bool = false;
 enum KEY {
@@ -11,23 +12,27 @@ enum KEY {
     ENTER
 }
 
-///
 /// Reads a character from user input. If multiple characters are given,
 /// character at first index is returned. In any problematic cases, return
 /// an asterisk (*).
-/// Credits: https://github.com/dcode-youtube/hangman-rust/blob/master/src/main.rs
 fn read_user_input_character() -> char {
-    let mut user_input = String::new();
+    let stdin = 0;
+    let termios = Termios::from_fd(stdin).unwrap();
+    let mut new_termios = termios.clone();
 
-    match std::io::stdin().read_line(&mut user_input) {
-        Ok(_) => {
-            match user_input.chars().next() {
-                Some(c) => { return c; }
-                None => { return '*'; }
-            }
-        }
-        Err(_) => { return '*'; }
-    }
+
+    new_termios.c_lflag &= !(ICANON | ECHO); 
+    tcsetattr(stdin, TCSANOW, &mut new_termios).unwrap();
+
+    let stdout = io::stdout();
+    let mut reader = io::stdin();
+    let mut buffer = [0;1];
+
+    stdout.lock().flush().unwrap();
+    reader.read_exact(&mut buffer).unwrap();
+    tcsetattr(stdin, TCSANOW, & termios).unwrap();
+
+    return buffer[0] as char;
 }
 
 fn cursor_input() ->  u32 {
@@ -77,16 +82,7 @@ fn logic(width: u16, height:u16) {
         let key: u32 = cursor_input();
         
         if key == 1 {
-            stdout.queue(style::SetForegroundColor(style::Color::White));
-            println!("\u{2588}");
-
-            cursor_y += 1.0;
             stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
-            stdout.queue(style::SetForegroundColor(style::Color::Black));
-            println!("\u{2588}");
-        }
-    
-        else if key == 2 {
             stdout.queue(style::SetForegroundColor(style::Color::White));
             println!("\u{2588}");
 
@@ -96,7 +92,19 @@ fn logic(width: u16, height:u16) {
             println!("\u{2588}");
         }
     
+        else if key == 2 {
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+            stdout.queue(style::SetForegroundColor(style::Color::White));
+            println!("\u{2588}");
+
+            cursor_y += 1.0;
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
+            stdout.queue(style::SetForegroundColor(style::Color::Black));
+            println!("\u{2588}");
+        }
+    
         else if key == 3 {
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
             stdout.queue(style::SetForegroundColor(style::Color::White));
             println!("\u{2588}");
 
@@ -107,6 +115,7 @@ fn logic(width: u16, height:u16) {
         }
     
         else if key == 4 {
+            stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
             stdout.queue(style::SetForegroundColor(style::Color::White));
             println!("\u{2588}");
             
