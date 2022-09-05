@@ -11,7 +11,8 @@ enum KEY {
     A,
     D,
     PLACE,
-    ERASE
+    ERASE,
+    QUIT
 }
 
 enum COLOR {
@@ -73,8 +74,9 @@ fn cursor_input() -> u32 {
         115 | 83 => return KEY::S as u32,
         97  | 65 => return KEY::A as u32,
         100 | 68 => return KEY::D as u32,
-        113 | 81 => return KEY::PLACE as u32,
+        112 | 80 => return KEY::PLACE as u32,
         101 | 69 => return KEY::ERASE as u32,
+        113 | 81 => return KEY::QUIT as u32,
         _ => return KEY::ERROR as u32,
     }
 }
@@ -117,9 +119,6 @@ fn place_blok(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, color: u32) {
     stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
     stdout.queue(style::SetForegroundColor(crossterm_color));
     println!("\u{2588}");
-
-    cursor_x -= 1.0;
-    place_new_cursor(&mut stdout, cursor_x, cursor_y);
 }
 
 fn logic(width: u16, height:u16) {
@@ -166,10 +165,18 @@ fn logic(width: u16, height:u16) {
 
         else if key == 5 { /* PLACE */
             place_blok(&mut stdout, cursor_x, cursor_y, 2); /* all colors will be implemented soon, hopefully */
+            cursor_x -= 1.0;
+            place_new_cursor(&mut stdout, cursor_x, cursor_y);
         }
 
         else if key == 6 { /* ERASE */
             place_blok(&mut stdout, cursor_x, cursor_y, 11);
+            cursor_x -= 1.0;
+            place_new_cursor(&mut stdout, cursor_x, cursor_y);
+        }
+
+        else if key == 7 { /* QUIT */
+            break;
         }
     
         else {
