@@ -35,9 +35,7 @@ enum COLOR {
     WHITE
 }
 
-/// Reads a character from user input. If multiple characters are given,
-/// character at first index is returned. In any problematic cases, return
-/// an asterisk (*).
+/// Reads a character from user input
 fn read_user_input_character() -> char {
     let stdin = 0;
     let termios = Termios::from_fd(stdin).unwrap();
