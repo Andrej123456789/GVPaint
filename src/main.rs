@@ -3,7 +3,7 @@
 use std::{io::{Write, stdout}};
 use crossterm::{terminal, style, QueueableCommand};
 
-mod menu;
+mod logic;
 
 fn main() {
     clearscreen::clear().expect("Failed to clean screen!");
@@ -26,7 +26,7 @@ fn main() {
         }
     }
 
-    menu::menu(x, y);
+    logic::logic(x, y);
 
     stdout.queue(style::SetBackgroundColor(style::Color::Reset));
     stdout.queue(style::SetForegroundColor(style::Color::Reset));

@@ -1,6 +1,6 @@
 use std::{{io, io::{Read, Write, Stdout, stdout}}};
 use std::collections::BTreeMap;
-use crossterm::{terminal, style, cursor, QueueableCommand};
+use crossterm::{terminal, style::{self, Color}, cursor, QueueableCommand};
 use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
 
 static mut ALREADY: bool = false;
@@ -86,8 +86,25 @@ fn cursor_input() -> u32 {
     }
 }
 
-fn get_color(stdout: &mut Stdout) -> u32 {
-    return COLOR::RED as u32; /* all colors will be implemented soon, hopefully */
+fn return_color(color: &mut u32) -> Color {
+    let mut crossterm_color = style::Color::Black;
+    match color {
+        0 => crossterm_color =  style::Color::Black,
+        1 => crossterm_color =  style::Color::Grey,
+        2 => crossterm_color =  style::Color::Red,
+        3 => crossterm_color =  style::Color::Green,
+        4 => crossterm_color =  style::Color::Blue,
+        5 => crossterm_color =  style::Color::Magenta,
+        6 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
+        7 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
+        8 => crossterm_color =  style::Color::Yellow,
+        9 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
+        10 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
+        11 => crossterm_color = style::Color::White,
+        _ => crossterm_color = style::Color::Black
+    }
+
+    return crossterm_color;
 }
 
 fn remove_old_cursor(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: &mut BTreeMap<(u32, u32), u32>) {
@@ -98,25 +115,7 @@ fn remove_old_cursor(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: 
     for (k, v) in placed {
         if (cursor_x as u32) == k.0 { /* we can just check any axis, x or y */
             stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
-
-            let mut crossterm_color = style::Color::Black;
-            match v {
-                0 => crossterm_color =  style::Color::Black,
-                1 => crossterm_color =  style::Color::Grey,
-                2 => crossterm_color =  style::Color::Red,
-                3 => crossterm_color =  style::Color::Green,
-                4 => crossterm_color =  style::Color::Blue,
-                5 => crossterm_color =  style::Color::Magenta,
-                6 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
-                7 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
-                8 => crossterm_color =  style::Color::Yellow,
-                9 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
-                10 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
-                11 => crossterm_color = style::Color::White,
-                _ => crossterm_color = style::Color::Black
-            }
-
-            stdout.queue(style::SetForegroundColor(crossterm_color));
+            stdout.queue(style::SetForegroundColor(return_color(v)));
             println!("\u{2588}");
         }
     }
@@ -140,32 +139,15 @@ fn place_new_cursor(stdout: &mut Stdout, mut cursor_x: f64, mut cursor_y: f64, p
 }
 
 fn place_blok(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: &mut BTreeMap<(u32, u32), u32>, color: u32) {
-    let mut crossterm_color = style::Color::Black;
-
-    match color {
-        0 => crossterm_color =  style::Color::Black,
-        1 => crossterm_color =  style::Color::Grey,
-        2 => crossterm_color =  style::Color::Red,
-        3 => crossterm_color =  style::Color::Green,
-        4 => crossterm_color =  style::Color::Blue,
-        5 => crossterm_color =  style::Color::Magenta,
-        6 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
-        7 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
-        8 => crossterm_color =  style::Color::Yellow,
-        9 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
-        10 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
-        11 => crossterm_color = style::Color::White,
-        _ => crossterm_color = style::Color::Black
-    }
+    let mut color2 = color;
 
     placed.insert((cursor_x as u32, cursor_y as u32), color);
-
     stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
-    stdout.queue(style::SetForegroundColor(crossterm_color));
+    stdout.queue(style::SetForegroundColor(return_color(&mut color2)));
     println!("\u{2588}");
 }
 
-fn logic(width: u16, height: u16) {
+pub fn logic(width: u16, height: u16) {
     let mut stdout: Stdout = stdout();
 
     let mut cursor_x: f64 = (width as f64) / (2.2 as f64);
@@ -220,9 +202,4 @@ fn logic(width: u16, height: u16) {
             _ => { /* ignore */ }
         }
     }
-}
-
-pub fn menu(width: u16, height:u16)
-{
-    logic(width, height);
 }
