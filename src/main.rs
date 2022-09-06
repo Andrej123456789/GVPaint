@@ -33,12 +33,6 @@ fn main() {
     let y_2 = (y as f64) / (2.2 as f64);
 
     let mut placed: BTreeMap<(u32, u32), u32> = BTreeMap::new();
-    let mut i = 0;
-
-    for i in (0..16) {
-        placed.insert((i as u32, 0), 3);
-    }
-
     let mut runtime = settings::Runtime {
         cursor_x: x_2,
         cursor_y: y_2,

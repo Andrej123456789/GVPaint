@@ -160,7 +160,7 @@ pub fn logic(width: u16, height: u16, runtime: &mut settings::Runtime) {
 
     stdout.queue(style::SetForegroundColor(style::Color::Red));
     stdout.queue(cursor::MoveTo(0, 0));
-    println!("File\tHelp");
+    println!("Press 'H' or 'h' for help!");
 
     stdout.queue(cursor::EnableBlinking);
     stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
