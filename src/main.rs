@@ -5,6 +5,7 @@ use crossterm::{terminal, style, QueueableCommand};
 
 mod logic;
 
+/// Entry point for program
 fn main() {
     clearscreen::clear().expect("Failed to clean screen!");
     let mut stdout = stdout();

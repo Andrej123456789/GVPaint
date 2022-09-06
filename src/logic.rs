@@ -56,6 +56,7 @@ fn read_user_input_character() -> char {
     return buffer[0] as char;
 }
 
+/// Returns enum value of keys which user enter
 fn cursor_input() -> u32 {
     let ch = read_user_input_character();
 
@@ -86,6 +87,7 @@ fn cursor_input() -> u32 {
     }
 }
 
+/// Returns color in style::Color based on number (0 - 11)
 fn return_color(color: &mut u32) -> Color {
     let mut crossterm_color = style::Color::Black;
     match color {
@@ -107,6 +109,7 @@ fn return_color(color: &mut u32) -> Color {
     return crossterm_color;
 }
 
+/// Removing old cursor, if painting is there, redraw it
 fn remove_old_cursor(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: &mut BTreeMap<(u32, u32), u32>) {
     stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
     stdout.queue(style::SetForegroundColor(style::Color::White));
@@ -121,6 +124,7 @@ fn remove_old_cursor(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: 
     }
 }
 
+/// Placing new cursor
 fn place_new_cursor(stdout: &mut Stdout, mut cursor_x: f64, mut cursor_y: f64, placed: &mut BTreeMap<(u32, u32), u32>, height: u16) -> f64 {
     if (cursor_y as u16) != (height - 2) {
         stdout.queue(cursor::MoveTo(cursor_x as u16, cursor_y as u16));
@@ -138,6 +142,7 @@ fn place_new_cursor(stdout: &mut Stdout, mut cursor_x: f64, mut cursor_y: f64, p
     return cursor_y;
 }
 
+/// Placing blok
 fn place_blok(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: &mut BTreeMap<(u32, u32), u32>, color: u32) {
     let mut color2 = color;
 
@@ -147,6 +152,7 @@ fn place_blok(stdout: &mut Stdout, cursor_x: f64, cursor_y: f64, placed: &mut BT
     println!("\u{2588}");
 }
 
+/// Entry function for drawing
 pub fn logic(width: u16, height: u16) {
     let mut stdout: Stdout = stdout();
 
