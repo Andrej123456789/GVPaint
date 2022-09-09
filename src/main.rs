@@ -29,6 +29,11 @@ fn main() {
         }
     }
 
+    let mut canvas = settings::Canvas {
+        width: x,
+        height: y
+    };
+
     let x_2 = (x as f64) / (2.2 as f64);
     let y_2 = (y as f64) / (2.2 as f64);
 
@@ -41,7 +46,12 @@ fn main() {
         placed: placed
     };
 
-    logic::logic(x, y, &mut runtime);
+    let mut state = settings::State {
+        window_open: false,
+        window_open_name: "none".to_string(),
+    };
+
+    logic::logic(&mut canvas, &mut runtime, &mut state);
 
     stdout.queue(style::SetBackgroundColor(style::Color::Reset));
     stdout.queue(style::SetForegroundColor(style::Color::Reset));
