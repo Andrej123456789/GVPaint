@@ -27,7 +27,6 @@ enum COLOR {
     RED,
     GREEN,
     BLUE,
-    MAGENTA,
     LGREEN,
     AQUA,
     YELLOW,
@@ -97,13 +96,12 @@ fn return_color(color: u32) -> Color {
         2 => crossterm_color =  style::Color::Red,
         3 => crossterm_color =  style::Color::Green,
         4 => crossterm_color =  style::Color::Blue,
-        5 => crossterm_color =  style::Color::Magenta,
-        6 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
-        7 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
-        8 => crossterm_color =  style::Color::Yellow,
-        9 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
-        10 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
-        11 => crossterm_color = style::Color::White,
+        5 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
+        6 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
+        7 => crossterm_color =  style::Color::Yellow,
+        8 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
+        9 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
+        10 => crossterm_color = style::Color::White,
         _ => crossterm_color = style::Color::Black
     }
 
