@@ -278,7 +278,7 @@ fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 
     stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 10, canvas.height - 10));
     stdout.queue(style::SetForegroundColor(style::Color::Red));
-    println!("file window test");
+    println!("Real implementation will be here somewhere in future, hopefully");
 }
 
 /// Closes windows or exits the program
