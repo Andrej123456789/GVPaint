@@ -93,7 +93,7 @@ fn cursor_input() -> u32 {
     }
 }
 
-/// Returns color in style::Color based on number (0 - 11)
+/// Returns color in style::Color based on number (10 - 18)
 fn return_color(color: u32) -> Color {
     let mut crossterm_color = style::Color::Black;
     match color {
@@ -102,16 +102,25 @@ fn return_color(color: u32) -> Color {
         12 => crossterm_color =  style::Color::Red,
         13 => crossterm_color =  style::Color::Green,
         14 => crossterm_color =  style::Color::Blue,
-        15 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
-        16 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
-        17 => crossterm_color =  style::Color::Yellow,
-        18 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
-        19 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
-        20 => crossterm_color = style::Color::White,
+        15 => crossterm_color =  style::Color::Rgb{r: 0, g: 255, b: 255},
+        16 => crossterm_color =  style::Color::Yellow,
+        17 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
+        18 => crossterm_color = style::Color::White,
         _ => crossterm_color = style::Color::Black
     }
 
     return crossterm_color;
+}
+
+/// Moves cursor (X or Y axis) by one based on last pressed key (W, S, A, D)
+fn move_cursor_blkey(runtime: &mut settings::Runtime) {
+    match runtime.last_pressed_key {
+        1 => runtime.cursor_y -= 1.0,
+        2 => runtime.cursor_y += 1.0,
+        3 => runtime.cursor_x -= 1.0,
+        4 => runtime.cursor_x += 1.0,
+        _ => runtime.cursor_x -= 1.0
+    }
 }
 
 /// Removing old cursor, if painting is there, redraw it
@@ -222,7 +231,7 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     println!("\t P - place block");
     println!("\t E - erase block");
     println!("\t Q - exit a program or close a window");
-    println!("\t 0 - 9 - change color");
+    println!("\t 1 - 9 - change color");
     println!(" ");
     println!("\t Made with Rust and thanks to StjepanBM1");
 }
@@ -321,26 +330,36 @@ pub fn logic(canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, sta
         match key {
             1 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_y -= 1.0;
-                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
+                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                    runtime.last_pressed_key = 1; },
             2 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_y += 1.0;
-                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
+                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                    runtime.last_pressed_key = 2; },
             3 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_x -= 1.0;
-                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
+                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);
+                    runtime.last_pressed_key = 3; },
             4 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_x += 1.0;
-                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
+                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);
+                    runtime.last_pressed_key = 4; },
             5 => { file_window(&mut stdout, canvas, runtime, state) },
             6 => { help_window(&mut stdout, canvas, runtime, state) },
-            7 => { place_blok(&mut stdout, runtime); /* all colors will be implemented soon, hopefully */
-                    runtime.cursor_x -= 1.0;
+            7 => { place_blok(&mut stdout, runtime);
+                    move_cursor_blkey(runtime);
                     runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
-            8 => { place_blok(&mut stdout, runtime);
-                    runtime.cursor_x -= 1.0;
+            8 => { 
+                    let current_color = runtime.color;
+                    runtime.color = style::Color::White;
+                    
+                    place_blok(&mut stdout, runtime);
+                    runtime.color = current_color;
+
+                    move_cursor_blkey(runtime);
                     runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
             9 => { close(&mut stdout, canvas, runtime, state); },
-            _ => { if (key >= 10 && key <= 20) { runtime.color = return_color(key); } }
+            _ => { if (key >= 10 && key <= 18) { runtime.color = return_color(key); } }
         }
     }
 }
