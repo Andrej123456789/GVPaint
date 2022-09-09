@@ -187,7 +187,7 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 
     stdout.queue(style::SetForegroundColor(style::Color::DarkGreen));
     stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 16));
-    println!("--- --- --- --- --- --- --- --- --- ---");
+    println!("--- --- --- --- --- --- --- --- --- --- --- ---");
 
     let mut i = 15;
     while i != 3 {
@@ -198,17 +198,27 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 
     let mut j = 15;
     while j != 3 {
-        stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 44, canvas.height - j));
+        stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 52, canvas.height - j));
         println!("|");
         j -= 1;
     }
 
     stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 3));
-    println!("--- --- --- --- --- --- --- --- --- ---");
+    println!("--- --- --- --- --- --- --- --- --- --- --- ---");
 
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 10, canvas.height - 10));
+    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 6, canvas.height - 14));
     stdout.queue(style::SetForegroundColor(style::Color::Red));
-    println!("help window test");
+    println!("Keyboard shortcuts: ");
+    println!("\t W - move cursor up");
+    println!("\t S - move cursor down");
+    println!("\t A - move cursor left");
+    println!("\t D - move cursor right");
+    println!("\t F - open 'file window'");
+    println!("\t H - open 'help window', this one");
+    println!("\t P - place block");
+    println!("\t E - erase block");
+    println!("\t Q - exit a program or close a window");
+    println!("\t Made with Rust and thanks to StjepanBM1");
 }
 
 /// Small "window" where we should have following options:
@@ -273,8 +283,12 @@ fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 
 /// Closes windows or exits the program
 fn close(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, state: &mut settings::State) {
-    if state.window_open == true {
+    if state.window_open == true && state.window_open_name == "help" {
         help_window(stdout, canvas, runtime, state);
+    }
+
+    else if state.window_open == true && state.window_open_name == "file" {
+        file_window(stdout, canvas, runtime, state);
     }
 
     else {
