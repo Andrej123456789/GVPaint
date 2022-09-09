@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use crossterm::style;
 
 /// Struct which holds informations about canvas, width and height in this case
 pub struct Canvas {
@@ -15,9 +16,9 @@ pub struct Canvas {
 pub struct Runtime {
     pub cursor_x: f64,
     pub cursor_y: f64,
-    pub color: u32,
+    pub color: style::Color,
     pub last_pressed_key: u32,
-    pub placed: BTreeMap<(u32, u32), u32>,
+    pub placed: BTreeMap<(u32, u32), style::Color>
 }
 
 /// Struct which holds runtime information which are not about cursors and blocks

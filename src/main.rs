@@ -37,11 +37,11 @@ fn main() {
     let x_2 = (x as f64) / (2.2 as f64);
     let y_2 = (y as f64) / (2.2 as f64);
 
-    let mut placed: BTreeMap<(u32, u32), u32> = BTreeMap::new();
+    let mut placed: BTreeMap<(u32, u32), style::Color> = BTreeMap::new();
     let mut runtime = settings::Runtime {
         cursor_x: x_2,
         cursor_y: y_2,
-        color: 3,
+        color: style::Color::Green,
         last_pressed_key: 0,
         placed: placed
     };

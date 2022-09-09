@@ -6,8 +6,6 @@ use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
 
 use crate::settings;
 
-static mut ALREADY: bool = false;
-
 enum KEY {
     ERROR,
     W,
@@ -18,7 +16,17 @@ enum KEY {
     HELP,
     PLACE,
     ERASE,
-    QUIT
+    QUIT,
+    C1,
+    C2,
+    C3,
+    C4,
+    C5,
+    C6,
+    C7,
+    C8,
+    C9,
+    C0
 }
 
 enum COLOR {
@@ -59,18 +67,6 @@ fn read_user_input_character() -> char {
 /// Returns enum value of keys which user enter
 fn cursor_input() -> u32 {
     let ch = read_user_input_character();
-
-    unsafe {
-        if ch == '*' && ALREADY == false {
-            ALREADY = true;
-            cursor_input();
-        }
-
-        else if ch == '*' && ALREADY == true {
-            return KEY::ERROR as u32;
-        }
-    }
-
     let ch_u32: u32 = ch as u32;
 
     match ch_u32 {
@@ -83,6 +79,16 @@ fn cursor_input() -> u32 {
         112 | 80 => return KEY::PLACE as u32,
         101 | 69 => return KEY::ERASE as u32,
         113 | 81 => return KEY::QUIT as u32,
+        49 => return KEY::C1 as u32,
+        50 => return KEY::C2 as u32,
+        51 => return KEY::C3 as u32,
+        52 => return KEY::C4 as u32,
+        53 => return KEY::C5 as u32,
+        54 => return KEY::C6 as u32,
+        55 => return KEY::C7 as u32,
+        56 => return KEY::C8 as u32,
+        57 => return KEY::C9 as u32,
+        48 => return KEY::C0 as u32,
         _ => return KEY::ERROR as u32,
     }
 }
@@ -91,17 +97,17 @@ fn cursor_input() -> u32 {
 fn return_color(color: u32) -> Color {
     let mut crossterm_color = style::Color::Black;
     match color {
-        0 => crossterm_color =  style::Color::Black,
-        1 => crossterm_color =  style::Color::Grey,
-        2 => crossterm_color =  style::Color::Red,
-        3 => crossterm_color =  style::Color::Green,
-        4 => crossterm_color =  style::Color::Blue,
-        5 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
-        6 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
-        7 => crossterm_color =  style::Color::Yellow,
-        8 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
-        9 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
-        10 => crossterm_color = style::Color::White,
+        10 => crossterm_color =  style::Color::Black,
+        11 => crossterm_color =  style::Color::Grey,
+        12 => crossterm_color =  style::Color::Red,
+        13 => crossterm_color =  style::Color::Green,
+        14 => crossterm_color =  style::Color::Blue,
+        15 => crossterm_color =  style::Color::Rgb{r: 14, g: 237, b: 22},
+        16 => crossterm_color =  style::Color::Rgb{r: 24, g: 194, b: 137},
+        17 => crossterm_color =  style::Color::Yellow,
+        18 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
+        19 => crossterm_color =  style::Color::Rgb{r: 102, g: 0, b: 0},
+        20 => crossterm_color = style::Color::White,
         _ => crossterm_color = style::Color::Black
     }
 
@@ -119,7 +125,7 @@ fn remove_old_cursor(stdout: &mut Stdout, runtime: &mut settings::Runtime) {
     for (k, v) in placed {
         if (runtime.cursor_x as u32) == k.0 { /* we can just check any axis, x or y */
             stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
-            stdout.queue(style::SetForegroundColor(return_color(v)));
+            stdout.queue(style::SetForegroundColor(v));
             println!("\u{2588}");
         }
     }
@@ -147,7 +153,7 @@ fn place_new_cursor(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime:
 fn place_blok(stdout: &mut Stdout, runtime: &mut settings::Runtime) {
     runtime.placed.insert((runtime.cursor_x as u32, runtime.cursor_y as u32), runtime.color);
     stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
-    stdout.queue(style::SetForegroundColor(return_color(runtime.color)));
+    stdout.queue(style::SetForegroundColor(runtime.color));
     println!("\u{2588}");
 }
 
@@ -167,7 +173,7 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
         for (k, v) in placed {
             if k.0 != 0 { /* we can just check any axis, x or y */
                 stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
-                stdout.queue(style::SetForegroundColor(return_color(v)));
+                stdout.queue(style::SetForegroundColor(v));
                 println!("\u{2588}");
             }
         }
@@ -184,18 +190,18 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     state.window_open_name = "help".to_string();
 
     stdout.queue(style::SetForegroundColor(style::Color::DarkGreen));
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 16));
+    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 18));
     println!("--- --- --- --- --- --- --- --- --- --- --- ---");
 
-    let mut i = 15;
-    while i != 3 {
+    let mut i = 17;
+    while i != 2 {
         stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 4, canvas.height - i));
         println!("|");
         i -= 1;
     }
 
-    let mut j = 15;
-    while j != 3 {
+    let mut j = 17;
+    while j != 2 {
         stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 52, canvas.height - j));
         println!("|");
         j -= 1;
@@ -204,7 +210,7 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 3));
     println!("--- --- --- --- --- --- --- --- --- --- --- ---");
 
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 6, canvas.height - 14));
+    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 6, canvas.height - 17));
     stdout.queue(style::SetForegroundColor(style::Color::Red));
     println!("Keyboard shortcuts: ");
     println!("\t W - move cursor up");
@@ -216,6 +222,8 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     println!("\t P - place block");
     println!("\t E - erase block");
     println!("\t Q - exit a program or close a window");
+    println!("\t 0 - 9 - change color");
+    println!(" ");
     println!("\t Made with Rust and thanks to StjepanBM1");
 }
 
@@ -237,7 +245,7 @@ fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
         for (k, v) in placed {
             if k.0 != 0 { /* we can just check any axis, x or y */
                 stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
-                stdout.queue(style::SetForegroundColor(return_color(v)));
+                stdout.queue(style::SetForegroundColor(v));
                 println!("\u{2588}");
             }
         }
@@ -311,28 +319,29 @@ pub fn logic(canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, sta
         let key: u32 = cursor_input();
 
         match key {
-            1 => {remove_old_cursor(&mut stdout, runtime);
+            1 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_y -= 1.0;
                     runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
-            2 => {remove_old_cursor(&mut stdout, runtime);
+            2 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_y += 1.0;
                     runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
-            3 => {remove_old_cursor(&mut stdout, runtime);
+            3 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_x -= 1.0;
                     runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
-            4 => {remove_old_cursor(&mut stdout, runtime);
+            4 => { remove_old_cursor(&mut stdout, runtime);
                     runtime.cursor_x += 1.0;
                     runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
             5 => { file_window(&mut stdout, canvas, runtime, state) },
             6 => { help_window(&mut stdout, canvas, runtime, state) },
-            7 => {place_blok(&mut stdout, runtime); /* all colors will be implemented soon, hopefully */
+            7 => { place_blok(&mut stdout, runtime); /* all colors will be implemented soon, hopefully */
                     runtime.cursor_x -= 1.0;
                     runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
-            8 => {place_blok(&mut stdout, runtime);
+            8 => { place_blok(&mut stdout, runtime);
                     runtime.cursor_x -= 1.0;
                     runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
-            9 => { close(&mut stdout, canvas, runtime, state) },
-            _ => { /* ignore */ }
+            9 => { close(&mut stdout, canvas, runtime, state); },
+            _ => { if (key >= 10 && key <= 20) { runtime.color = return_color(key); } }
         }
     }
 }
+
