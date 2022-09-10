@@ -5,7 +5,7 @@ Paint ported to Windows (only in WSL though), macOS, GNU/Linux, BSD and others f
 - Written fully in Rust (so expect little slower compile time when compiling first time)
 - Memory safety
 - Speed and resource usage (RAM usage is about 760 Kilobytes)
-- Has 11 colors (including black, grey, red, green, blue, aqua, yellow, orange, white)
+- Has 9 colors (including black, grey, red, green, blue, aqua, yellow, orange, white)
 - TUI app (runs fully in terminal/terminal emulator)
 - Under MIT license
 
