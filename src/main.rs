@@ -1,8 +1,8 @@
 #![allow(unused)]
 
-use std::{io::{Write, stdout}};
+use crossterm::{style, terminal, QueueableCommand};
 use std::collections::BTreeMap;
-use crossterm::{terminal, style, QueueableCommand};
+use std::io::{stdout, Write};
 
 mod logic;
 mod settings;
@@ -24,14 +24,14 @@ fn main() {
     while i < y {
         while j < x {
             println!(" ");
-            i+=1;
-            j+=1;
+            i += 1;
+            j += 1;
         }
     }
 
     let mut canvas = settings::Canvas {
         width: x,
-        height: y
+        height: y,
     };
 
     let x_2 = (x as f64) / (2.2 as f64);
@@ -43,7 +43,7 @@ fn main() {
         cursor_y: y_2,
         color: style::Color::Green,
         last_pressed_key: 0,
-        placed: placed
+        placed: placed,
     };
 
     let mut state = settings::State {

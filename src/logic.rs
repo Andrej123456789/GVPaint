@@ -1,8 +1,15 @@
-use std::{{io, io::{Read, Write, Stdout, stdout}}};
 use std::collections::BTreeMap;
+use std::{
+    io,
+    io::{stdout, Read, Stdout, Write},
+};
 
-use crossterm::{terminal, style::{self, Color, SetForegroundColor}, cursor, QueueableCommand};
-use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
+use crossterm::{
+    cursor,
+    style::{self, Color, SetForegroundColor},
+    terminal, QueueableCommand,
+};
+use termios::{tcsetattr, Termios, ECHO, ICANON, TCSANOW};
 
 use crate::settings;
 
@@ -26,7 +33,7 @@ enum KEY {
     C7,
     C8,
     C9,
-    C0
+    C0,
 }
 
 enum COLOR {
@@ -40,7 +47,7 @@ enum COLOR {
     YELLOW,
     ORANGE,
     BROWN,
-    WHITE
+    WHITE,
 }
 
 /// Reads a character from user input
@@ -49,17 +56,16 @@ fn read_user_input_character() -> char {
     let termios = Termios::from_fd(stdin).unwrap();
     let mut new_termios = termios.clone();
 
-
-    new_termios.c_lflag &= !(ICANON | ECHO); 
+    new_termios.c_lflag &= !(ICANON | ECHO);
     tcsetattr(stdin, TCSANOW, &mut new_termios).unwrap();
 
     let stdout = io::stdout();
     let mut reader = io::stdin();
-    let mut buffer = [0;1];
+    let mut buffer = [0; 1];
 
     stdout.lock().flush().unwrap();
     reader.read_exact(&mut buffer).unwrap();
-    tcsetattr(stdin, TCSANOW, & termios).unwrap();
+    tcsetattr(stdin, TCSANOW, &termios).unwrap();
 
     return buffer[0] as char;
 }
@@ -72,7 +78,7 @@ fn cursor_input() -> u32 {
     match ch_u32 {
         119 | 87 => return KEY::W as u32,
         115 | 83 => return KEY::S as u32,
-        97  | 65 => return KEY::A as u32,
+        97 | 65 => return KEY::A as u32,
         100 | 68 => return KEY::D as u32,
         102 | 70 => return KEY::FILE as u32,
         104 | 72 => return KEY::HELP as u32,
@@ -97,16 +103,28 @@ fn cursor_input() -> u32 {
 fn return_color(color: u32) -> Color {
     let mut crossterm_color = style::Color::Black;
     match color {
-        10 => crossterm_color =  style::Color::Black,
-        11 => crossterm_color =  style::Color::Grey,
-        12 => crossterm_color =  style::Color::Red,
-        13 => crossterm_color =  style::Color::Green,
-        14 => crossterm_color =  style::Color::Blue,
-        15 => crossterm_color =  style::Color::Rgb{r: 0, g: 255, b: 255},
-        16 => crossterm_color =  style::Color::Yellow,
-        17 => crossterm_color =  style::Color::Rgb{r: 237, g: 116, b: 24},
+        10 => crossterm_color = style::Color::Black,
+        11 => crossterm_color = style::Color::Grey,
+        12 => crossterm_color = style::Color::Red,
+        13 => crossterm_color = style::Color::Green,
+        14 => crossterm_color = style::Color::Blue,
+        15 => {
+            crossterm_color = style::Color::Rgb {
+                r: 0,
+                g: 255,
+                b: 255,
+            }
+        }
+        16 => crossterm_color = style::Color::Yellow,
+        17 => {
+            crossterm_color = style::Color::Rgb {
+                r: 237,
+                g: 116,
+                b: 24,
+            }
+        }
         18 => crossterm_color = style::Color::White,
-        _ => crossterm_color = style::Color::Black
+        _ => crossterm_color = style::Color::Black,
     }
 
     return crossterm_color;
@@ -119,20 +137,24 @@ fn move_cursor_blkey(runtime: &mut settings::Runtime) {
         2 => runtime.cursor_y += 1.0,
         3 => runtime.cursor_x -= 1.0,
         4 => runtime.cursor_x += 1.0,
-        _ => runtime.cursor_x -= 1.0
+        _ => runtime.cursor_x -= 1.0,
     }
 }
 
 /// Removing old cursor, if painting is there, redraw it
 fn remove_old_cursor(stdout: &mut Stdout, runtime: &mut settings::Runtime) {
-    stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
+    stdout.queue(cursor::MoveTo(
+        runtime.cursor_x as u16,
+        runtime.cursor_y as u16,
+    ));
     stdout.queue(style::SetForegroundColor(style::Color::White));
     println!("\u{2588}");
 
     let mut placed = runtime.placed.clone();
 
     for (k, v) in placed {
-        if (runtime.cursor_x as u32) == k.0 { /* we can just check any axis, x or y */
+        if (runtime.cursor_x as u32) == k.0 {
+            /* we can just check any axis, x or y */
             stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
             stdout.queue(style::SetForegroundColor(v));
             println!("\u{2588}");
@@ -141,14 +163,19 @@ fn remove_old_cursor(stdout: &mut Stdout, runtime: &mut settings::Runtime) {
 }
 
 /// Placing new cursor
-fn place_new_cursor(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut settings::Runtime) -> f64 {
+fn place_new_cursor(
+    stdout: &mut Stdout,
+    canvas: &mut settings::Canvas,
+    runtime: &mut settings::Runtime,
+) -> f64 {
     if (runtime.cursor_y as u16) != (canvas.height - 2) {
-        stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
+        stdout.queue(cursor::MoveTo(
+            runtime.cursor_x as u16,
+            runtime.cursor_y as u16,
+        ));
         stdout.queue(style::SetForegroundColor(style::Color::Black));
         println!("\u{2588}");
-    }
-
-    else {
+    } else {
         remove_old_cursor(stdout, runtime);
 
         runtime.cursor_y -= 2.0;
@@ -160,14 +187,25 @@ fn place_new_cursor(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime:
 
 /// Placing blok
 fn place_blok(stdout: &mut Stdout, runtime: &mut settings::Runtime) {
-    runtime.placed.insert((runtime.cursor_x as u32, runtime.cursor_y as u32), runtime.color);
-    stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
+    runtime.placed.insert(
+        (runtime.cursor_x as u32, runtime.cursor_y as u32),
+        runtime.color,
+    );
+    stdout.queue(cursor::MoveTo(
+        runtime.cursor_x as u16,
+        runtime.cursor_y as u16,
+    ));
     stdout.queue(style::SetForegroundColor(runtime.color));
     println!("\u{2588}");
 }
 
 /// Small "window" with shows help information
-fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, state: &mut settings::State) {
+fn help_window(
+    stdout: &mut Stdout,
+    canvas: &mut settings::Canvas,
+    runtime: &mut settings::Runtime,
+    state: &mut settings::State,
+) {
     if state.window_open == true && state.window_open_name == "help" {
         /* close */
         state.window_open = false;
@@ -180,7 +218,8 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 
         let mut placed = runtime.placed.clone();
         for (k, v) in placed {
-            if k.0 != 0 { /* we can just check any axis, x or y */
+            if k.0 != 0 {
+                /* we can just check any axis, x or y */
                 stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
                 stdout.queue(style::SetForegroundColor(v));
                 println!("\u{2588}");
@@ -188,7 +227,10 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
         }
 
         stdout.queue(cursor::EnableBlinking);
-        stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
+        stdout.queue(cursor::MoveTo(
+            runtime.cursor_x as u16,
+            runtime.cursor_y as u16,
+        ));
         stdout.queue(style::SetForegroundColor(style::Color::Black));
         println!("\u{2588}");
 
@@ -199,27 +241,42 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     state.window_open_name = "help".to_string();
 
     stdout.queue(style::SetForegroundColor(style::Color::DarkGreen));
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 18));
+    stdout.queue(cursor::MoveTo(
+        canvas.width - canvas.width + 5,
+        canvas.height - 18,
+    ));
     println!("--- --- --- --- --- --- --- --- --- --- --- ---");
 
     let mut i = 17;
     while i != 2 {
-        stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 4, canvas.height - i));
+        stdout.queue(cursor::MoveTo(
+            canvas.width - canvas.width + 4,
+            canvas.height - i,
+        ));
         println!("|");
         i -= 1;
     }
 
     let mut j = 17;
     while j != 2 {
-        stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 52, canvas.height - j));
+        stdout.queue(cursor::MoveTo(
+            canvas.width - canvas.width + 52,
+            canvas.height - j,
+        ));
         println!("|");
         j -= 1;
     }
 
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 3));
+    stdout.queue(cursor::MoveTo(
+        canvas.width - canvas.width + 5,
+        canvas.height - 3,
+    ));
     println!("--- --- --- --- --- --- --- --- --- --- --- ---");
 
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 6, canvas.height - 17));
+    stdout.queue(cursor::MoveTo(
+        canvas.width - canvas.width + 6,
+        canvas.height - 17,
+    ));
     stdout.queue(style::SetForegroundColor(style::Color::Red));
     println!("Keyboard shortcuts: ");
     println!("\t W - move cursor up");
@@ -228,7 +285,7 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     println!("\t D - move cursor right");
     println!("\t F - open 'file window'");
     println!("\t H - open 'help window', this one");
-    println!("\t P - place block");
+    println!("\t P - place block or select a row in menu");
     println!("\t E - erase block");
     println!("\t Q - exit a program or close a window");
     println!("\t 1 - 9 - change color");
@@ -239,7 +296,12 @@ fn help_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 /// Small "window" where we should have following options:
 /// Open picture
 /// Save picture
-fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, state: &mut settings::State) {
+fn file_window(
+    stdout: &mut Stdout,
+    canvas: &mut settings::Canvas,
+    runtime: &mut settings::Runtime,
+    state: &mut settings::State,
+) {
     if state.window_open == true && state.window_open_name == "file" {
         /* close */
         state.window_open = false;
@@ -252,7 +314,8 @@ fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
 
         let mut placed = runtime.placed.clone();
         for (k, v) in placed {
-            if k.0 != 0 { /* we can just check any axis, x or y */
+            if k.0 != 0 {
+                /* we can just check any axis, x or y */
                 stdout.queue(cursor::MoveTo(k.0 as u16, k.1 as u16));
                 stdout.queue(style::SetForegroundColor(v));
                 println!("\u{2588}");
@@ -260,7 +323,10 @@ fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
         }
 
         stdout.queue(cursor::EnableBlinking);
-        stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
+        stdout.queue(cursor::MoveTo(
+            runtime.cursor_x as u16,
+            runtime.cursor_y as u16,
+        ));
         stdout.queue(style::SetForegroundColor(style::Color::Black));
         println!("\u{2588}");
 
@@ -271,50 +337,116 @@ fn file_window(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut
     state.window_open_name = "file".to_string();
 
     stdout.queue(style::SetForegroundColor(style::Color::DarkGreen));
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 16));
+    stdout.queue(cursor::MoveTo(
+        canvas.width - canvas.width + 5,
+        canvas.height - 16,
+    ));
     println!("--- --- --- --- --- --- --- --- --- ---");
 
     let mut i = 15;
     while i != 3 {
-        stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 4, canvas.height - i));
+        stdout.queue(cursor::MoveTo(
+            canvas.width - canvas.width + 4,
+            canvas.height - i,
+        ));
         println!("|");
         i -= 1;
     }
 
     let mut j = 15;
     while j != 3 {
-        stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 44, canvas.height - j));
+        stdout.queue(cursor::MoveTo(
+            canvas.width - canvas.width + 44,
+            canvas.height - j,
+        ));
         println!("|");
         j -= 1;
     }
 
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 5, canvas.height - 3));
+    stdout.queue(cursor::MoveTo(
+        canvas.width - canvas.width + 5,
+        canvas.height - 3,
+    ));
     println!("--- --- --- --- --- --- --- --- --- ---");
 
-    stdout.queue(cursor::MoveTo(canvas.width - canvas.width + 10, canvas.height - 10));
+    stdout.queue(cursor::MoveTo(
+        canvas.width - canvas.width + 10,
+        canvas.height - 10,
+    ));
     stdout.queue(style::SetForegroundColor(style::Color::Red));
-    println!("Real implementation will");
-    println!("\t  here somewhere in");
-    println!("\t  future, hopefully");
+    println!(" ");
+    println!("\t Open text file");
+    println!("\t Save as text file");
+    println!("\t Open .png file (todo)");
+    println!("\t Save as .png (todo)");
+}
+
+/// Actions from menu from file_window function
+fn file_window_actions(
+    stdout: &mut Stdout,
+    canvas: &mut settings::Canvas,
+    runtime: &mut settings::Runtime,
+    state: &mut settings::State,
+) {
+    if (runtime.cursor_x as u16 >= 0 + 23
+        && runtime.cursor_x as u16 <= canvas.width + 30
+        && runtime.cursor_y as u16 == canvas.height - 9)
+    /* open text file */
+    {
+        /* hello */
+    } else if (runtime.cursor_x as u16 >= 0 + 26
+        && runtime.cursor_x as u16 <= canvas.width + 30
+        && runtime.cursor_y as u16 == canvas.height - 8)
+    /* save as text file */
+    {
+        /* hello */
+    } else if (runtime.cursor_x as u16 >= 0 + 22
+        && runtime.cursor_x as u16 <= canvas.width + 30
+        && runtime.cursor_y as u16 == canvas.height - 7)
+    /* open .png file */
+    {
+        stdout.queue(cursor::MoveTo(
+            canvas.width - canvas.width + 10,
+            canvas.height - 11,
+        ));
+        stdout.queue(style::SetForegroundColor(style::Color::DarkYellow));
+        println!("On TODO list");
+    } else if (runtime.cursor_x as u16 >= 0 + 28
+        && runtime.cursor_x as u16 <= canvas.width + 30
+        && runtime.cursor_y as u16 == canvas.height - 6)
+    /* save .png file */
+    {
+        stdout.queue(cursor::MoveTo(
+            canvas.width - canvas.width + 10,
+            canvas.height - 11,
+        ));
+        stdout.queue(style::SetForegroundColor(style::Color::DarkYellow));
+        println!("On TODO list!");
+    }
 }
 
 /// Closes windows or exits the program
-fn close(stdout: &mut Stdout, canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, state: &mut settings::State) {
+fn close(
+    stdout: &mut Stdout,
+    canvas: &mut settings::Canvas,
+    runtime: &mut settings::Runtime,
+    state: &mut settings::State,
+) {
     if state.window_open == true && state.window_open_name == "help" {
         help_window(stdout, canvas, runtime, state);
-    }
-
-    else if state.window_open == true && state.window_open_name == "file" {
+    } else if state.window_open == true && state.window_open_name == "file" {
         file_window(stdout, canvas, runtime, state);
-    }
-
-    else {
+    } else {
         std::process::exit(0);
     }
 }
 
 /// Entry function for drawing
-pub fn logic(canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, state: &mut settings::State) {
+pub fn logic(
+    canvas: &mut settings::Canvas,
+    runtime: &mut settings::Runtime,
+    state: &mut settings::State,
+) {
     let mut stdout: Stdout = stdout();
 
     stdout.queue(style::SetForegroundColor(style::Color::Red));
@@ -322,7 +454,10 @@ pub fn logic(canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, sta
     println!("Press 'H' or 'h' for help!");
 
     stdout.queue(cursor::EnableBlinking);
-    stdout.queue(cursor::MoveTo(runtime.cursor_x as u16, runtime.cursor_y as u16));
+    stdout.queue(cursor::MoveTo(
+        runtime.cursor_x as u16,
+        runtime.cursor_y as u16,
+    ));
     stdout.queue(style::SetForegroundColor(style::Color::Black));
     println!("\u{2588}");
 
@@ -330,39 +465,59 @@ pub fn logic(canvas: &mut settings::Canvas, runtime: &mut settings::Runtime, sta
         let key: u32 = cursor_input();
 
         match key {
-            1 => { remove_old_cursor(&mut stdout, runtime);
-                    runtime.cursor_y -= 1.0;
-                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
-                    runtime.last_pressed_key = 1; },
-            2 => { remove_old_cursor(&mut stdout, runtime);
-                    runtime.cursor_y += 1.0;
-                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
-                    runtime.last_pressed_key = 2; },
-            3 => { remove_old_cursor(&mut stdout, runtime);
-                    runtime.cursor_x -= 1.0;
-                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);
-                    runtime.last_pressed_key = 3; },
-            4 => { remove_old_cursor(&mut stdout, runtime);
-                    runtime.cursor_x += 1.0;
-                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);
-                    runtime.last_pressed_key = 4; },
-            5 => { file_window(&mut stdout, canvas, runtime, state) },
-            6 => { help_window(&mut stdout, canvas, runtime, state) },
-            7 => { place_blok(&mut stdout, runtime);
-                    move_cursor_blkey(runtime);
-                    runtime.cursor_y =  place_new_cursor(&mut stdout, canvas, runtime);},
-            8 => { 
-                    let current_color = runtime.color;
-                    runtime.color = style::Color::White;
-                    
+            1 => {
+                remove_old_cursor(&mut stdout, runtime);
+                runtime.cursor_y -= 1.0;
+                runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                runtime.last_pressed_key = 1;
+            }
+            2 => {
+                remove_old_cursor(&mut stdout, runtime);
+                runtime.cursor_y += 1.0;
+                runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                runtime.last_pressed_key = 2;
+            }
+            3 => {
+                remove_old_cursor(&mut stdout, runtime);
+                runtime.cursor_x -= 1.0;
+                runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                runtime.last_pressed_key = 3;
+            }
+            4 => {
+                remove_old_cursor(&mut stdout, runtime);
+                runtime.cursor_x += 1.0;
+                runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                runtime.last_pressed_key = 4;
+            }
+            5 => file_window(&mut stdout, canvas, runtime, state),
+            6 => help_window(&mut stdout, canvas, runtime, state),
+            7 => {
+                if (state.window_open == true && state.window_open_name == "file") {
+                    file_window_actions(&mut stdout, canvas, runtime, state);
+                } else {
                     place_blok(&mut stdout, runtime);
-                    runtime.color = current_color;
-
                     move_cursor_blkey(runtime);
-                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);},
-            9 => { close(&mut stdout, canvas, runtime, state); },
-            _ => { if (key >= 10 && key <= 18) { runtime.color = return_color(key); } }
+                    runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+                }
+            }
+            8 => {
+                let current_color = runtime.color;
+                runtime.color = style::Color::White;
+
+                place_blok(&mut stdout, runtime);
+                runtime.color = current_color;
+
+                move_cursor_blkey(runtime);
+                runtime.cursor_y = place_new_cursor(&mut stdout, canvas, runtime);
+            }
+            9 => {
+                close(&mut stdout, canvas, runtime, state);
+            }
+            _ => {
+                if (key >= 10 && key <= 18) {
+                    runtime.color = return_color(key);
+                }
+            }
         }
     }
 }
-
