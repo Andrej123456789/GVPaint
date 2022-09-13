@@ -388,33 +388,37 @@ fn file_window_actions(
     runtime: &mut settings::Runtime,
     state: &mut settings::State,
 ) {
-    if (runtime.cursor_x as u16 >= 0 + 23
-        && runtime.cursor_x as u16 <= canvas.width + 30
+    let max_x = 40;
+
+    /*
+     * Open text file
+     * Save text file
+     * Open .png file
+     * Save as png file
+     */
+    if (runtime.cursor_x as u16 >= 23
+        && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 9)
-    /* open text file */
     {
         /* hello */
-    } else if (runtime.cursor_x as u16 >= 0 + 26
-        && runtime.cursor_x as u16 <= canvas.width + 30
+    } else if (runtime.cursor_x as u16 >= 26
+        && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 8)
-    /* save as text file */
     {
         /* hello */
-    } else if (runtime.cursor_x as u16 >= 0 + 22
-        && runtime.cursor_x as u16 <= canvas.width + 30
+    } else if (runtime.cursor_x as u16 >= 22
+        && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 7)
-    /* open .png file */
     {
         stdout.queue(cursor::MoveTo(
             canvas.width - canvas.width + 10,
             canvas.height - 11,
         ));
         stdout.queue(style::SetForegroundColor(style::Color::DarkYellow));
-        println!("On TODO list");
-    } else if (runtime.cursor_x as u16 >= 0 + 28
-        && runtime.cursor_x as u16 <= canvas.width + 30
+        println!("On TODO list!");
+    } else if (runtime.cursor_x as u16 >= 28
+        && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 6)
-    /* save .png file */
     {
         stdout.queue(cursor::MoveTo(
             canvas.width - canvas.width + 10,
