@@ -51,7 +51,11 @@ fn main() {
         window_open_name: "none".to_string(),
     };
 
-    logic::logic(&mut canvas, &mut runtime, &mut state);
+    let mut file_menu = settings::FileMenu {
+        file_content: " ".to_string(),
+    };
+
+    logic::logic(&mut canvas, &mut runtime, &mut state, &mut file_menu);
 
     stdout.queue(style::SetBackgroundColor(style::Color::Reset));
     stdout.queue(style::SetForegroundColor(style::Color::Reset));

@@ -26,3 +26,8 @@ pub struct State {
     pub window_open: bool,
     pub window_open_name: String,
 }
+
+/// Struct which holds temporary informations required for file menu
+pub struct FileMenu {
+    pub file_content: String,
+}

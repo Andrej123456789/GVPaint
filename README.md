@@ -1,6 +1,8 @@
 # GVPaint
 Paint ported to Windows (only in WSL though), macOS, GNU/Linux, BSD and others from [PekOS-GV](https://github.com/StjepanBM1/PekOS/tree/3.X-Kernel/PekOS/PekOS%20GV)
 
+[Guide](https://github.com/Andrej123456789/GVPaint/blob/master/GUIDE.md) on how to use text files to draw painting
+
 [GVPaint 1.0.0](https://github.com/Andrej123456789/GVPaint/releases/tag/v1.0.0)
 
 ## Features (or bugs)

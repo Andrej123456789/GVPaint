@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
+use std::vec;
 use std::{
-    io,
-    io::{stdout, Read, Stdout, Write},
+    fs, io,
+    io::{prelude::*, stdout, Read, Stdout, Write},
 };
 
 use crossterm::{
@@ -381,12 +382,25 @@ fn file_window(
     println!("\t Save as .png (todo)");
 }
 
+/// Return content of text file
+fn content_in_file(file_menu: &mut settings::FileMenu, filename: &str) -> std::io::Result<()> {
+    let cwd = std::env::current_dir().unwrap();
+    /*let cwd_str = cwd.into_os_string().into_string();
+    println!("{:?}", cwd_str);*/
+
+    let mut file = fs::File::open(filename)?;
+    file.read_to_string(&mut file_menu.file_content)?;
+
+    Ok(())
+}
+
 /// Actions from menu from file_window function
 fn file_window_actions(
     stdout: &mut Stdout,
     canvas: &mut settings::Canvas,
     runtime: &mut settings::Runtime,
     state: &mut settings::State,
+    file_menu: &mut settings::FileMenu,
 ) {
     let max_x = 40;
 
@@ -400,12 +414,84 @@ fn file_window_actions(
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 9)
     {
-        /* hello */
+        content_in_file(file_menu, "painting.txt");
+
+        if (file_menu.file_content == " ") {
+            let strings: [&str; 6] = [
+                "Make sure you have `painting.txt` in",
+                "working folder!",
+                "If you are running directly from GitHub",
+                "repo, enter repo root folder",
+                "and there create `painting.txt` file.",
+                " ",
+            ];
+            let mut i = 15;
+            let mut j = 0;
+
+            while (i >= 10) {
+                stdout.queue(cursor::MoveTo(5, canvas.height - i));
+                stdout.queue(style::SetForegroundColor(style::Color::DarkYellow));
+                println!("{}", strings[j]);
+
+                i -= 1;
+                j += 1;
+            }
+        } else {
+            let vec: Vec<u32> = file_menu
+                .file_content
+                .split_whitespace()
+                .map(|s| s.parse().expect("Parsing error!"))
+                .collect();
+
+            let current_x = runtime.cursor_x;
+            let current_y = runtime.cursor_y;
+            let current_color = runtime.color;
+
+            let mut temp_x = current_x;
+            let mut temp_y = current_y;
+            let mut temp_color = current_color;
+
+            let mut iterator = 1;
+
+            for i in vec {
+                match iterator {
+                    1 => {
+                        temp_x = i as f64;
+                        iterator += 1;
+                    }
+                    2 => {
+                        temp_y = i as f64;
+                        iterator += 1;
+                    }
+                    3 => {
+                        temp_color = return_color(i);
+
+                        runtime.cursor_x = temp_x;
+                        runtime.cursor_y = temp_y;
+                        runtime.color = temp_color;
+
+                        place_blok(stdout, runtime);
+
+                        runtime.cursor_x = current_x;
+                        runtime.cursor_y = current_y;
+                        runtime.color = current_color;
+
+                        temp_x = 0 as f64;
+                        temp_y = 0 as f64;
+                        temp_color = return_color(10);
+
+                        iterator = 1;
+                    }
+
+                    _ => { /* ignore */ }
+                }
+            }
+        }
     } else if (runtime.cursor_x as u16 >= 26
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 8)
     {
-        /* hello */
+        /* todo */
     } else if (runtime.cursor_x as u16 >= 22
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 7)
@@ -450,6 +536,7 @@ pub fn logic(
     canvas: &mut settings::Canvas,
     runtime: &mut settings::Runtime,
     state: &mut settings::State,
+    file_menu: &mut settings::FileMenu,
 ) {
     let mut stdout: Stdout = stdout();
 
@@ -497,7 +584,7 @@ pub fn logic(
             6 => help_window(&mut stdout, canvas, runtime, state),
             7 => {
                 if (state.window_open == true && state.window_open_name == "file") {
-                    file_window_actions(&mut stdout, canvas, runtime, state);
+                    file_window_actions(&mut stdout, canvas, runtime, state, file_menu);
                 } else {
                     place_blok(&mut stdout, runtime);
                     move_cursor_blkey(runtime);
