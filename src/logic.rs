@@ -1,10 +1,12 @@
 use std::collections::BTreeMap;
+use std::path::Path;
 use std::vec;
 use std::{
     fs, io,
     io::{prelude::*, stdout, Read, Stdout, Write},
 };
 
+use crossterm::style::SetStyle;
 use crossterm::{
     cursor,
     style::{self, Color, SetForegroundColor},
@@ -129,6 +131,34 @@ fn return_color(color: u32) -> Color {
     }
 
     return crossterm_color;
+}
+
+/// Returns color in u32 type
+fn return_color_int(color: style::Color) -> u32 {
+    let mut color_to_return = 10;
+
+    match color {
+        style::Color::Black => color_to_return = 10,
+        style::Color::Grey => color_to_return = 11,
+        style::Color::Red => color_to_return = 12,
+        style::Color::Green => color_to_return = 13,
+        style::Color::Blue => color_to_return = 14,
+        style::Color::Rgb {
+            r: 0,
+            g: 255,
+            b: 255,
+        } => color_to_return = 15,
+        style::Color::Yellow => color_to_return = 16,
+        style::Color::Rgb {
+            r: 237,
+            g: 116,
+            b: 24,
+        } => color_to_return = 17,
+        style::Color::White => color_to_return = 18,
+        _ => color_to_return = 10,
+    }
+
+    return color_to_return;
 }
 
 /// Moves cursor (X or Y axis) by one based on last pressed key (W, S, A, D)
@@ -382,7 +412,7 @@ fn file_window(
     println!("\t Save as .png (todo)");
 }
 
-/// Return content of text file
+/// Returns content of text file
 fn content_in_file(file_menu: &mut settings::FileMenu, filename: &str) -> std::io::Result<()> {
     let cwd = std::env::current_dir().unwrap();
     /*let cwd_str = cwd.into_os_string().into_string();
@@ -390,6 +420,26 @@ fn content_in_file(file_menu: &mut settings::FileMenu, filename: &str) -> std::i
 
     let mut file = fs::File::open(filename)?;
     file.read_to_string(&mut file_menu.file_content)?;
+
+    Ok(())
+}
+
+/// Writes content to file
+fn write_to_file(new_file: bool, filename: &str, string: String) -> std::io::Result<()> {
+    if new_file {
+        let mut file = fs::File::create(filename)?;
+        file.write_all(string.as_bytes())?;
+    } else {
+        let mut file2 = fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(filename)
+            .unwrap();
+
+        if let Err(e) = write!(file2, "{}", string) {
+            eprintln!("Couldn't write to file: {}", e);
+        }
+    }
 
     Ok(())
 }
@@ -491,7 +541,27 @@ fn file_window_actions(
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 8)
     {
-        /* todo */
+        if Path::new("painting.txt").exists() {
+            fs::rename("painting.txt", "painting2.txt")
+                .expect("Couldn't rename `painting.txt` to `painting2.txt`!");
+        }
+
+        let mut new_file = true;
+        let mut placed = runtime.placed.clone();
+        for (k, v) in placed {
+            let mut options = fs::OpenOptions::new();
+            let mut file = options.write(true).open("painting.txt");
+
+            let mut string: String = k.0.to_string()
+                + " "
+                + &k.1.to_string()
+                + " "
+                + &return_color_int(v).to_string()
+                + "\n";
+
+            write_to_file(new_file, "painting.txt", string);
+            new_file = false;
+        }
     } else if (runtime.cursor_x as u16 >= 22
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 7)
