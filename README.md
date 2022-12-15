@@ -1,3 +1,5 @@
+**PROJECT IS DONE**
+
 # GVPaint
 Paint ported to Windows (only in WSL though), macOS, GNU/Linux, BSD and others from [PekOS-GV](https://github.com/StjepanBM1/PekOS/tree/3.X-Kernel/PekOS/PekOS%20GV)
 
