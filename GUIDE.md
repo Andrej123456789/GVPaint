@@ -10,5 +10,5 @@
 X axis
 ```
 
-All numbers **have to** be splited by space!
-Btw, add I would recommend to end new line on the end
+All numbers **have to** be separated by space!
+Btw, I would recommend to add a new line on the end

@@ -1,7 +1,5 @@
-**PROJECT IS DONE**
-
 # GVPaint
-Paint ported to Windows (only in WSL though), macOS, GNU/Linux, BSD and others from [PekOS-GV](https://github.com/StjepanBM1/PekOS/tree/3.X-Kernel/PekOS/PekOS%20GV)
+Paint ported to Windows, macOS, GNU/Linux, BSD and others from [PekOS-GV](https://github.com/StjepanBM1/PekOS/tree/3.X-Kernel/PekOS/PekOS%20GV)
 
 [Guide](https://github.com/Andrej123456789/GVPaint/blob/master/GUIDE.md) on how to use text files to draw painting
 
@@ -11,7 +9,7 @@ Paint ported to Windows (only in WSL though), macOS, GNU/Linux, BSD and others f
 - Written fully in Rust (so expect little slower compile time when compiling first time)
 - Memory safety
 - Speed and resource usage (RAM usage is about 760 Kilobytes, can be larger as painting is larger)
-- Has 9 colors (including black, grey, red, green, blue, aqua, yellow, orange, white)
+- Has 10 colors (black, dark blue, light green, light cyan, light magenta, brown, light grey, yellow and white)
 - TUI app (runs fully in terminal/terminal emulator)
 - Under MIT license
 

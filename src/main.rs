@@ -1,11 +1,15 @@
 #![allow(unused)]
 
-use crossterm::{style, terminal, QueueableCommand};
-use std::collections::BTreeMap;
-use std::io::{stdout, Write};
+use std::{
+    collections::BTreeMap,
+    io::{stdout, Write}
+};
 
-mod logic;
-mod settings;
+use crossterm::{style, terminal, QueueableCommand};
+
+mod paint;
+mod variables;
+mod window;
 
 /// Entry point for program
 fn main() {
@@ -29,7 +33,7 @@ fn main() {
         }
     }
 
-    let mut canvas = settings::Canvas {
+    let mut canvas = variables::Canvas {
         width: x,
         height: y,
     };
@@ -38,24 +42,24 @@ fn main() {
     let y_2 = (y as f64) / (2.2 as f64);
 
     let mut placed: BTreeMap<(u32, u32), style::Color> = BTreeMap::new();
-    let mut runtime = settings::Runtime {
+    let mut runtime = variables::Runtime {
         cursor_x: x_2,
         cursor_y: y_2,
         color: style::Color::Green,
-        last_pressed_key: 0,
+        last_pressed_key: paint::KEY::NONE,
         placed: placed,
     };
 
-    let mut state = settings::State {
+    let mut state = variables::State {
         window_open: false,
         window_open_name: "none".to_string(),
     };
 
-    let mut file_menu = settings::FileMenu {
+    let mut file_menu = variables::FileMenu {
         file_content: " ".to_string(),
     };
 
-    logic::logic(&mut canvas, &mut runtime, &mut state, &mut file_menu);
+    paint::paint(&mut canvas, &mut runtime, &mut state, &mut file_menu);
 
     stdout.queue(style::SetBackgroundColor(style::Color::Reset));
     stdout.queue(style::SetForegroundColor(style::Color::Reset));
