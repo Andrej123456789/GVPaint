@@ -5,6 +5,8 @@ Paint ported to Windows, macOS, GNU/Linux, BSD and others from [PekOS-GV](https:
 
 [GVPaint 1.0.0](https://github.com/Andrej123456789/GVPaint/releases/tag/v1.0.0)
 
+[GVPaint 2.0.0](https://github.com/Andrej123456789/GVPaint/releases/tag/v2.0.0)
+
 ## Features (or bugs)
 - Written fully in Rust (so expect little slower compile time when compiling first time)
 - Memory safety
