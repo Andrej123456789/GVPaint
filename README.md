@@ -8,7 +8,7 @@ Paint ported to Windows, macOS, GNU/Linux, BSD and others from [PekOS-GV](https:
 [GVPaint 2.0.0](https://github.com/Andrej123456789/GVPaint/releases/tag/v2.0.0)
 
 ## Features (or bugs)
-- Written fully in Rust (so expect little slower compile time when compiling first time)
+- Written fully in Rust (so expect little bit slower compile time when compiling for first time)
 - Memory safety
 - 10 colors (black, dark blue, light green, light cyan, light magenta, brown, light grey, yellow and white)
 - Saves paintings to .txt and .png files
