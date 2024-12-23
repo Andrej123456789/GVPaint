@@ -8,14 +8,17 @@ Paint ported to Windows, macOS, GNU/Linux, BSD and others from [PekOS-GV](https:
 ## Features (or bugs)
 - Written fully in Rust (so expect little slower compile time when compiling first time)
 - Memory safety
-- Speed and resource usage (RAM usage is about 760 Kilobytes, can be larger as painting is larger)
-- Has 10 colors (black, dark blue, light green, light cyan, light magenta, brown, light grey, yellow and white)
+- 10 colors (black, dark blue, light green, light cyan, light magenta, brown, light grey, yellow and white)
+- Saves paintings to .txt and .png files
+    - it saves and opens only files with name `painting`
+    - opening .png files are only for read only purpose
+    - when opening .png files make sure your canvas size is larger than on saved image
 - TUI app (runs fully in terminal/terminal emulator)
 - Under MIT license
 
 ## Compile & Run
 - Install [Rust](https://www.rust-lang.org/tools/install)
-- Type in terminal/terminal emulator: `cargo run --release`
+- Run `cargo run --release`
 - If you use install (GNU/)Linux based operating system make sure you have `cc` and `gcc` compiler installed
 
 **Thanks to [StjepanBM1](https://github.com/StjepanBM1) for creating one of best paint programs in the world :)**

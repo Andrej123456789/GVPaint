@@ -2,7 +2,7 @@
 
 use std::{
     collections::BTreeMap,
-    io::{stdout, Write}
+    io::{stdout, Write}, process::exit
 };
 
 use crossterm::{style, terminal, QueueableCommand};
@@ -45,6 +45,7 @@ fn main() {
     let mut runtime = variables::Runtime {
         cursor_x: x_2,
         cursor_y: y_2,
+        cursor_color: style::Color::Black,
         color: style::Color::Green,
         last_pressed_key: paint::KEY::NONE,
         placed: placed,

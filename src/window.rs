@@ -10,6 +10,11 @@ use crossterm::{
     QueueableCommand,
 };
 
+use image::{
+    open, GenericImageView,
+    Pixel, Rgb, RgbImage,
+};
+
 use crate::paint;
 use crate::variables;
 
@@ -74,8 +79,7 @@ pub fn help_window(
     println!("\t S - move cursor down");
     println!("\t A - move cursor left");
     println!("\t D - move cursor right");
-    println!("\t O - open a painting");
-    println!("\t F - save a painting'");
+    println!("\t F - open 'file window'");
     println!("\t H - open 'help window', this one");
     println!("\t P - place a block");
     println!("\t E - erase a block");
@@ -180,6 +184,38 @@ fn write_to_file(new_file: bool, filename: &str, string: String) -> std::io::Res
     Ok(())
 }
 
+/// Convert crossterm::style::Color to image::Rgb<u8>
+fn crossterm_to_image_color(color: style::Color) -> Rgb<u8> {
+    match color {
+        style::Color::Black => Rgb([0, 0, 0]),
+        style::Color::DarkGrey => Rgb([64, 64, 64]),
+        style::Color::Grey => Rgb([128, 128, 128]),
+        style::Color::White => Rgb([255, 255, 255]),
+        style::Color::Red => Rgb([255, 0, 0]),
+        style::Color::DarkRed => Rgb([128, 0, 0]),
+        style::Color::Green => Rgb([0, 255, 0]),
+        style::Color::DarkGreen => Rgb([0, 128, 0]),
+        style::Color::Blue => Rgb([0, 0, 255]),
+        style::Color::DarkBlue => Rgb([0, 0, 128]),
+        style::Color::Yellow => Rgb([255, 255, 0]),
+        style::Color::DarkYellow => Rgb([128, 128, 0]),
+        style::Color::Magenta => Rgb([255, 0, 255]),
+        style::Color::DarkMagenta => Rgb([128, 0, 128]),
+        style::Color::Cyan => Rgb([0, 255, 255]),
+        style::Color::DarkCyan => Rgb([0, 128, 128]),
+        style::Color::Rgb { r, g, b } => Rgb([r, g, b]),
+        _ => Rgb([0, 0, 0])
+    }
+}
+
+/// Convert image::Rgb<u8> to crossterm::style::Color
+fn rgb_to_crossterm_color(rgb: Rgb<u8>) -> style::Color {
+    style::Color::Rgb {
+        r: rgb[0],
+        g: rgb[1],
+        b: rgb[2],
+    }
+}
 /// Actions for file window
 pub fn file_window_actions(
     stdout: &mut Stdout,
@@ -307,21 +343,30 @@ pub fn file_window_actions(
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 7)
     {
-        stdout.queue(cursor::MoveTo(
-            canvas.width - canvas.width + 10,
-            canvas.height - 11,
-        ));
-        stdout.queue(style::SetForegroundColor(style::Color::DarkYellow));
-        println!("On TODO list!");
+        let img = open("painting.png").expect("Failed to open image");
+        let rgb_img = img.to_rgb8();
+
+        for (x, y, pixel) in rgb_img.enumerate_pixels() {
+            let color = pixel.to_rgb(); // Extract the color as an RGB value
+
+            runtime.cursor_x = x as f64;
+            runtime.cursor_y = y as f64;
+            runtime.color = rgb_to_crossterm_color(color.to_rgb());
+
+            paint::place_blok(stdout, runtime);
+        }
+
+        runtime.cursor_color = style::Color::DarkRed;
     } else if (runtime.cursor_x as u16 >= 28
         && runtime.cursor_x as u16 <= max_x
         && runtime.cursor_y as u16 == canvas.height - 6)
     {
-        stdout.queue(cursor::MoveTo(
-            canvas.width - canvas.width + 10,
-            canvas.height - 11,
-        ));
-        stdout.queue(style::SetForegroundColor(style::Color::DarkYellow));
-        println!("On TODO list!");
+        let mut img = RgbImage::new(canvas.width as u32, canvas.height as u32);
+
+        for (k, v) in runtime.placed.clone() {
+            img.put_pixel(k.0, k.1, crossterm_to_image_color(v));
+        }
+
+        img.save("painting.png").expect("Failed to save image");
     }
 }

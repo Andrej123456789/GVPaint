@@ -11,12 +11,14 @@ pub struct Canvas {
 
 /// Struct holding following information:
 /// cursor's X and Y axis,
+/// cursor's color
 /// color for next block,
 /// last pressed key (1 - 4, W, S, A, D),
 /// placed blocks
 pub struct Runtime {
     pub cursor_x: f64,
     pub cursor_y: f64,
+    pub cursor_color: style::Color,
     pub color: style::Color,
     pub last_pressed_key: KEY,
     pub placed: BTreeMap<(u32, u32), style::Color>,

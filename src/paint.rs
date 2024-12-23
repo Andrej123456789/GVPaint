@@ -188,7 +188,7 @@ fn place_new_cursor(
             runtime.cursor_x as u16,
             runtime.cursor_y as u16,
         ));
-        stdout.queue(style::SetForegroundColor(style::Color::Black));
+        stdout.queue(style::SetForegroundColor(runtime.cursor_color));
         println!("\u{2588}");
     } else {
         remove_old_cursor(stdout, runtime);
@@ -251,7 +251,7 @@ pub fn redraw_canvas(stdout: &mut Stdout, runtime: &mut variables::Runtime) {
         runtime.cursor_x as u16,
         runtime.cursor_y as u16,
     ));
-    stdout.queue(style::SetForegroundColor(style::Color::Black));
+    stdout.queue(style::SetForegroundColor(runtime.cursor_color));
     println!("\u{2588}");
 
     return;
@@ -275,7 +275,7 @@ pub fn paint(
         runtime.cursor_x as u16,
         runtime.cursor_y as u16,
     ));
-    stdout.queue(style::SetForegroundColor(style::Color::Black));
+    stdout.queue(style::SetForegroundColor(runtime.cursor_color));
     println!("\u{2588}");
 
     loop {
